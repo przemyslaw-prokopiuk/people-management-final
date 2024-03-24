@@ -1,29 +1,42 @@
--- Inserting students
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (1, 'Karol', 'Kowalski', '95052103000', 170, 70, 'email@example.com');
-INSERT INTO student (id, university_name, graduation_year, scholarship_amount) VALUES (1, 'Uniwersytet Warszawski', '2000-03-21', 919);
+CREATE TABLE IF NOT EXISTS person
+(
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    first_name          VARCHAR(255),
+    last_name           VARCHAR(255),
+    social_number       VARCHAR(255),
+    height              DECIMAL(5, 2),
+    weight              DECIMAL(5, 2),
+    email               VARCHAR(255),
+    type                VARCHAR(255),
+    university_name     VARCHAR(255),
+    graduation_year     DATE,
+    scholarship_amount  DECIMAL(10, 2),
+    position_name       VARCHAR(255),
+    start_date          DATE,
+    salary              DECIMAL(10, 2),
+    monthly_pension     DECIMAL(10, 2),
+    total_years_of_work INT,
+    version             INT
+);
 
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (2, 'Marek', 'Rynkowski', '95052103001', 222, 249, 'Yxgor@example.com');
-INSERT INTO student (id, university_name, graduation_year, scholarship_amount) VALUES (2, 'Uniwersytet Warszawski', '2013-03-02', 768);
-
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (3, 'Bartek', 'Komputer', '95052103002', 81, 97, 'Nehtf@example.com');
-INSERT INTO student (id, university_name, graduation_year, scholarship_amount) VALUES (3, 'University Dupa', '1953-09-05', 989);
-
--- Inserting employees
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (4, 'Karol', 'Kowalski', '95052103003', 171, 71, 'Jvezr@example.com');
-INSERT INTO employee (id, position_name, start_date, salary) VALUES (4, 'Drukarz Frytkarz', '1972-03-25', 666);
-
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (5, 'Marek', 'Rynkowski', '95052103004', 185, 232, 'Qvnfo@example.com');
-INSERT INTO employee (id, position_name, start_date, salary) VALUES (5, 'Drukarz Frytkarz', '1980-02-17', 274);
-
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (6, 'Bartek', 'Komputer', '95052103005', 136, 108, 'Lokxc@example.com');
-INSERT INTO employee (id, position_name, start_date, salary) VALUES (6, 'Position Mzicx', '2011-12-07', 263);
-
--- Inserting pensioners
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (7, 'Karol', 'Kowalski', '95052103006', 172, 72, 'Mzylx@example.com');
-INSERT INTO pensioner (id, monthly_pension, total_years_of_work) VALUES (7, 1594, 70);
-
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (8, 'Marek', 'Rynkowski', '95052103007', 137, 291, 'Jcvww@example.com');
-INSERT INTO pensioner (id, monthly_pension, total_years_of_work) VALUES (8, 3719, 4);
-
-INSERT INTO person (id, first_name, last_name, social_number, height, weight, email) VALUES (9, 'Bartek', 'Komputer', '95052103008', 149, 321, 'Bcqph@example.com');
-INSERT INTO pensioner (id, monthly_pension, total_years_of_work) VALUES (9, 3414, 10);
+INSERT INTO person (id, first_name, last_name, social_number, height, weight, email, type,
+                    university_name, graduation_year, scholarship_amount, position_name, start_date,
+                    salary, monthly_pension, total_years_of_work, version)
+VALUES (1, 'Karol', 'Kowalski', '95052103000', 170, 70, 'email@example.com', 'student', 'Uniwersytet Warszawski',
+        '2000-03-21', 919, NULL, NULL, NULL, NULL, NULL, 0),
+       (2, 'Marek', 'Rynkowski', '95052103001', 222, 249, 'Yxgor@exampló.com', 'student', 'Uniwersytet Warszawski',
+        '2013-03-02', 768, NULL, NULL, NULL, NULL, NULL, 0),
+       (3, 'Bartek', 'Komputer', '95052103002', 81, 97, 'Nehtf@example.com', 'student', 'University Dupa', '1953-09-05',
+        989, NULL, NULL, NULL, NULL, NULL, 0),
+       (4, 'Karol', 'Kowalski', '95052103003', 171, 71, 'Jvezr@example.com', 'employee', NULL, NULL, NULL,
+        'Drukarz Frytkarz', '1972-03-25', 666, NULL, NULL, 0),
+       (5, 'Marek', 'Rynkowski', '95052103004', 185, 232, 'Qvnfo@example.com', 'employee', NULL, NULL, NULL,
+        'Drukarz Frytkarz', '1980-02-17', 274, NULL, NULL, 0),
+       (6, 'Bartek', 'Komputer', '95052103005', 136, 108, 'Lokxc@example.com', 'employee', NULL, NULL, NULL,
+        'Position Mzicx', '2011-12-07', 263, NULL, NULL, 0),
+       (7, 'Karol', 'Kowalski', '95052103006', 172, 72, 'Mzylx@example.com', 'pensioner', NULL, NULL, NULL, NULL, NULL,
+        NULL, 1594, 70, 0),
+       (8, 'Marek', 'Rynkowski', '95052103007', 137, 291, 'Jcvww@example.com', 'pensioner', NULL, NULL, NULL, NULL,
+        NULL, NULL, 3719, 4, 0),
+       (9, 'Bartek', 'Komputer', '95052103008', 149, 321, 'Bcqph@example.com', 'pensioner', NULL, NULL, NULL, NULL,
+        NULL, NULL, 3414, 10, 0);

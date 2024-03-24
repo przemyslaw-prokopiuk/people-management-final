@@ -1,10 +1,10 @@
-package pl.kurs.service.impl;
+package pl.kurs.service.upload.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.kurs.service.FileManagementService;
+import pl.kurs.service.upload.FileManagementService;
 
 import java.io.File;
 import java.io.IOException;

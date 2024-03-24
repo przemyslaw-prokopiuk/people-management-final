@@ -1,6 +1,5 @@
 package pl.kurs.model.command.update;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
@@ -11,7 +10,6 @@ import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("student")
 public class UpdateStudentCommand extends UpdatePersonCommand {
 
     @Pattern(regexp = "[a-zA-Z0-9 ]+", message = "University name must match {regexp}.")

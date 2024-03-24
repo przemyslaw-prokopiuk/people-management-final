@@ -1,25 +1,18 @@
 package pl.kurs.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import pl.kurs.model.Person;
-import pl.kurs.model.command.creation.CreatePersonCommand;
-import pl.kurs.model.command.update.UpdatePersonCommand;
 import pl.kurs.model.dto.PersonDto;
 import pl.kurs.model.search.SearchCriteria;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface PeopleService {
 
-    PersonDto save(CreatePersonCommand command);
-
-    Person findById(Long id);
+    PersonDto save(JsonNode creationNode);
 
     Page<PersonDto> findBy(List<SearchCriteria> searchCriteria, Pageable pageable);
 
-    PersonDto update(Long id, UpdatePersonCommand command);
-
-    LocalDate decodeDateOfBirth(String socialNumber);
+    PersonDto update(Long id, JsonNode updateNode);
 }

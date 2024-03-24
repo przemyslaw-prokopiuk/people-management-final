@@ -2,21 +2,21 @@ package pl.kurs.model.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import pl.kurs.model.command.creation.CreatePositionCommand;
+import pl.kurs.model.command.creation.PositionCommand;
 import pl.kurs.model.validation.annotation.ValidDate;
 
-public class PositionCommandValidator implements ConstraintValidator<ValidDate, CreatePositionCommand> {
+public class PositionCommandValidator implements ConstraintValidator<ValidDate, PositionCommand> {
 
     @Override
-    public boolean isValid(CreatePositionCommand command, ConstraintValidatorContext context) {
+    public boolean isValid(PositionCommand command, ConstraintValidatorContext context) {
         if (command.getStartDate() == null) {
-            addConstraintViolation(context, "Start date must be present.");
+            addConstraintViolation(context, "Start date cannot be empty.");
             return false;
         } else if (command.getEndDate() == null && command.getCurrentPositionEndDate() == null) {
-            addConstraintViolation(context, "Specify either historical or current position dates, not both.");
+            addConstraintViolation(context, "Specify either historical or current position end date.");
             return false;
         } else if (command.getEndDate() != null && command.getCurrentPositionEndDate() != null) {
-            addConstraintViolation(context, "End date and current position's end date can't both be present.");
+            addConstraintViolation(context, "Specify either historical or current position end date.");
             return false;
         } else if (command.getEndDate() != null && command.getStartDate().isAfter(command.getEndDate())) {
             addConstraintViolation(context, "Start date must be before end date for historical positions.");

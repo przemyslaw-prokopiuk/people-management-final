@@ -1,25 +1,24 @@
 package pl.kurs.model.command.update;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import pl.kurs.model.validation.annotation.ValidSocialNumber;
 
-@Getter
-@Setter
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = UpdateStudentCommand.class, name = "student"),
-        @JsonSubTypes.Type(value = UpdateEmployeeCommand.class, name = "employee"),
-        @JsonSubTypes.Type(value = UpdatePensionerCommand.class, name = "pensioner")})
-public abstract class UpdatePersonCommand {
+@Data
+public class UpdatePersonCommand {
+
+    @NotNull(message = "Type cannot be empty.")
+    private String type;
 
     @Pattern(regexp = "[A-Z][a-z]{2,}( [A-Z][a-z]{2,})?", message = "First name must match {regexp}.")
     private String firstName;
 
     @Pattern(regexp = "[A-Z][a-z]{2,}( [A-Z][a-z]{2,})?", message = "Last name must match {regexp}.")
     private String lastName;
+
+    @Pattern(regexp = "[0-9]{11}", message = "Social number must contain 11 digits.")
+    @ValidSocialNumber
+    private String socialNumber;
 
     @DecimalMin(value = "50.0", message = "Height must be greater than {value} cm.")
     @DecimalMax(value = "250.0", message = "Height must be lower than {value} cm.")
@@ -32,4 +31,6 @@ public abstract class UpdatePersonCommand {
     @Email(message = "Please provide valid email address.")
     private String email;
 
+    @NotNull(message = "Version cannot be null.")
+    private Long version;
 }

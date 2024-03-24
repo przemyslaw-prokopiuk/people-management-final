@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.kurs.model.upload.dto.UploadDto;
 import pl.kurs.model.upload.dto.UploadProgressDto;
-import pl.kurs.service.UploadRequestProcessor;
-import pl.kurs.service.UploadProgressService;
+import pl.kurs.service.upload.UploadRequestProcessor;
+import pl.kurs.service.upload.UploadProgressService;
 
 import java.io.IOException;
 

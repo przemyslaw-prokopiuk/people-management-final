@@ -1,6 +1,5 @@
 package pl.kurs.model.command.update;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
@@ -10,7 +9,6 @@ import java.math.BigInteger;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("pensioner")
 public class UpdatePensionerCommand extends UpdatePersonCommand {
 
     @Min(value = 1000, message = "Monthly pension cannot be lower than 1000.")

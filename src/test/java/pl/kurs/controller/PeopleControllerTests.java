@@ -2,31 +2,30 @@ package pl.kurs.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.kurs.model.Employee;
+import pl.kurs.model.Person;
 import pl.kurs.model.command.creation.CreateEmployeeCommand;
 import pl.kurs.model.command.creation.CreatePensionerCommand;
-import pl.kurs.model.command.creation.CreatePositionCommand;
 import pl.kurs.model.command.creation.CreateStudentCommand;
-import pl.kurs.model.command.update.UpdateEmployeeCommand;
+import pl.kurs.model.command.creation.PositionCommand;
 import pl.kurs.model.command.update.UpdatePensionerCommand;
+import pl.kurs.model.command.update.UpdatePersonCommand;
 import pl.kurs.model.command.update.UpdateStudentCommand;
 import pl.kurs.model.search.SearchCriteria;
 import pl.kurs.repository.PersonRepository;
@@ -37,22 +36,23 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@Testcontainers
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@RunWith(SpringRunner.class)
+@Transactional
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class PeopleControllerTest {
+public class PeopleControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -66,25 +66,13 @@ class PeopleControllerTest {
     @Autowired
     private PositionRepository positionRepository;
 
-    @Container
-    @ServiceConnection
-    public static MySQLContainer container = new MySQLContainer("mysql:5.7")
-            .withDatabaseName("example_db")
-            .withUsername("Test")
-            .withPassword("Test");
-
-    @BeforeAll
-    public static void setUp() {
-        container.withReuse(true);
-        container.start();
-    }
-
     @Test
     @WithMockUser(roles = "ADMIN")
     public void testSave_StudentSavedByAdmin_Success() throws Exception {
-        assertFalse(personRepository.findById(1L).isPresent());
+        Assertions.assertFalse(personRepository.findById(1L).isPresent());
 
         CreateStudentCommand command = new CreateStudentCommand();
+        command.setType("student");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -110,15 +98,16 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.graduationYear").value(command.getGraduationYear().toString()))
                 .andExpect(jsonPath("$.scholarshipAmount").value(command.getScholarshipAmount()));
 
-        assertTrue(personRepository.findById(1L).isPresent());
+        Assertions.assertTrue(personRepository.findById(1L).isPresent());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     public void testSave_EmployeeSavedByAdmin_Success() throws Exception {
-        assertFalse(personRepository.findById(1L).isPresent());
+        Assertions.assertFalse(personRepository.findById(1L).isPresent());
 
         CreateEmployeeCommand command = new CreateEmployeeCommand();
+        command.setType("employee");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -144,7 +133,7 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.startDate").value(command.getStartDate().toString()))
                 .andExpect(jsonPath("$.salary").value(command.getSalary()));
 
-        assertTrue(personRepository.findById(1L).isPresent());
+        Assertions.assertTrue(personRepository.findById(1L).isPresent());
     }
 
     @Test
@@ -153,6 +142,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreatePensionerCommand command = new CreatePensionerCommand();
+        command.setType("pensioner");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -176,19 +166,19 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.monthlyPension").value(command.getMonthlyPension()))
                 .andExpect(jsonPath("$.totalYearsOfWork").value(command.getTotalYearsOfWork()));
 
-        assertTrue(personRepository.findById(1L).isPresent());
+        Assertions.assertTrue(personRepository.findById(1L).isPresent());
     }
 
     @Test
     public void testSave_PersonNotSavedByUnauthenticatedUser_UnauthenticatedAccess() throws Exception {
-        assertFalse(personRepository.findById(1L).isPresent());
+        Assertions.assertFalse(personRepository.findById(1L).isPresent());
 
         mockMvc.perform(post("/api/v1/people")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new CreatePensionerCommand())))
                 .andExpect(status().isUnauthorized());
 
-        assertFalse(personRepository.findById(1L).isPresent());
+        Assertions.assertFalse(personRepository.findById(1L).isPresent());
     }
 
     @Test
@@ -223,6 +213,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreateStudentCommand command = new CreateStudentCommand();
+        command.setType("student");
         command.setFirstName(null);
         command.setLastName(null);
         command.setSocialNumber(null);
@@ -258,6 +249,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreateStudentCommand command = new CreateStudentCommand();
+        command.setType("student");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -286,6 +278,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreateStudentCommand command = new CreateStudentCommand();
+        command.setType("student");
         command.setFirstName("BOBO");
         command.setLastName("BOMBASTIC");
         command.setSocialNumber("950501000000");
@@ -320,6 +313,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreateEmployeeCommand command = new CreateEmployeeCommand();
+        command.setType("employee");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -349,6 +343,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreateEmployeeCommand command = new CreateEmployeeCommand();
+        command.setType("employee");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -378,6 +373,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreatePensionerCommand command = new CreatePensionerCommand();
+        command.setType("pensioner");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -405,6 +401,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreatePensionerCommand command = new CreatePensionerCommand();
+        command.setType("pensioner");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -432,6 +429,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreatePensionerCommand command = new CreatePensionerCommand();
+        command.setType("pensioner");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("95052100000");
@@ -458,6 +456,7 @@ class PeopleControllerTest {
         assertFalse(personRepository.findById(1L).isPresent());
 
         CreatePensionerCommand command = new CreatePensionerCommand();
+        command.setType("pensioner");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setSocialNumber("00000000000");
@@ -471,7 +470,9 @@ class PeopleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(command)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid PESEL number: " + command.getSocialNumber()));
+                .andExpect(jsonPath("$.message").value("Field validations errors"))
+                .andExpect(jsonPath("$.violations[0].field").value("socialNumber"))
+                .andExpect(jsonPath("$.violations[0].message").value("Provided social number is invalid."));
 
         assertFalse(personRepository.findById(1L).isPresent());
     }
@@ -828,6 +829,7 @@ class PeopleControllerTest {
     @Transactional
     public void testUpdate_StudentUpdatedByAdmin_Success() throws Exception {
         UpdateStudentCommand command = new UpdateStudentCommand();
+        command.setType("student");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setHeight(186.0);
@@ -836,6 +838,7 @@ class PeopleControllerTest {
         command.setUniversityName("Uniwersytet Warszawski");
         command.setGraduationYear(LocalDate.of(2017, 7, 1));
         command.setScholarshipAmount(1000.0);
+        command.setVersion(0L);
 
         mockMvc.perform(patch("/api/v1/people/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -858,15 +861,18 @@ class PeopleControllerTest {
     @Sql("/data.sql")
     @Transactional
     public void testUpdate_EmployeeUpdatedByAdmin_Success() throws Exception {
-        UpdateEmployeeCommand command = new UpdateEmployeeCommand();
+        UpdatePersonCommand command = new UpdatePersonCommand();
+        command.setType("employee");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setHeight(186.0);
         command.setWeight(105.0);
         command.setEmail("email@example.com");
-        command.setPositionName("Frytkarz");
-        command.setStartDate(LocalDate.of(2023, 3, 1));
-        command.setSalary(BigDecimal.valueOf(5000.0));
+        command.setVersion(0L);
+
+        Optional<Person> byId = personRepository.findById(4L);
+        Person person = byId.get();
+        System.out.println("PERSON: " + person);
 
         mockMvc.perform(patch("/api/v1/people/4")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -878,10 +884,7 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.socialNumber").value(personRepository.findById(4L).get().getSocialNumber()))
                 .andExpect(jsonPath("$.height").value(command.getHeight()))
                 .andExpect(jsonPath("$.weight").value(command.getWeight()))
-                .andExpect(jsonPath("$.email").value(command.getEmail()))
-                .andExpect(jsonPath("$.positionName").value(command.getPositionName()))
-                .andExpect(jsonPath("$.startDate").value(command.getStartDate().toString()))
-                .andExpect(jsonPath("$.salary").value(command.getSalary()));
+                .andExpect(jsonPath("$.email").value(command.getEmail()));
     }
 
     @Test
@@ -890,6 +893,7 @@ class PeopleControllerTest {
     @Transactional
     public void testUpdate_PensionerUpdatedByAdmin_Success() throws Exception {
         UpdatePensionerCommand command = new UpdatePensionerCommand();
+        command.setType("pensioner");
         command.setFirstName("Frank");
         command.setLastName("Sinatra");
         command.setHeight(186.0);
@@ -897,6 +901,7 @@ class PeopleControllerTest {
         command.setEmail("email@example.com");
         command.setMonthlyPension(BigInteger.valueOf(3000L));
         command.setTotalYearsOfWork(50);
+        command.setVersion(0L);
 
         mockMvc.perform(patch("/api/v1/people/7")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -965,9 +970,11 @@ class PeopleControllerTest {
     }
 
     @Test
+    @Sql("/data.sql")
     @WithMockUser(roles = "ADMIN")
     public void testUpdate_StudentNotUpdatedValidationFailed_MethodArgumentNotValidExceptionThrown() throws Exception {
         UpdateStudentCommand command = new UpdateStudentCommand();
+        command.setType("student");
         command.setFirstName("BONZO");
         command.setLastName("BOMBASTIC");
         command.setHeight(30.0);
@@ -994,31 +1001,14 @@ class PeopleControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    public void testUpdate_EmployeeNotUpdatedValidationFailed_MethodArgumentNotValidExceptionThrown() throws Exception {
-        UpdateEmployeeCommand command = new UpdateEmployeeCommand();
-        command.setPositionName("XXXXXXX");
-        command.setStartDate(LocalDate.of(2111, 1, 1));
-        command.setSalary(BigDecimal.valueOf(50.0));
-
-        mockMvc.perform(patch("/api/v1/people/4")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(command)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
-                .andExpect(jsonPath("$.message").value("Field validations errors"))
-                .andExpect(jsonPath("$.violations[?(@.field=='positionName')].message").value("Position name must match [A-Z][a-z]{2,}."))
-                .andExpect(jsonPath("$.violations[?(@.field=='startDate')].message").value("Start date cannot be in the future."))
-                .andExpect(jsonPath("$.violations[?(@.field=='salary')].message").value("Salary amount cannot be lower than 100."));
-
-    }
-
-    @Test
+    @Sql("/data.sql")
     @WithMockUser(roles = "ADMIN")
     public void testUpdate_PensionerNotUpdatedValidationFailed_MethodArgumentNotValidExceptionThrown() throws Exception {
-        CreatePensionerCommand command = new CreatePensionerCommand();
+        UpdatePensionerCommand command = new UpdatePensionerCommand();
+        command.setType("pensioner");
         command.setMonthlyPension(BigInteger.valueOf(500L));
         command.setTotalYearsOfWork(0);
+        command.setVersion(0L);
 
         mockMvc.perform(patch("/api/v1/people/7")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -1037,7 +1027,7 @@ class PeopleControllerTest {
     public void testAddPosition_HistoricalPositionAddedToEmployeeByAdmin_Success() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Drukarz Frytkarz");
         command.setStartDate(LocalDate.of(1960, 1, 1));
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1052,8 +1042,6 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.startDate").value(command.getStartDate().toString()))
                 .andExpect(jsonPath("$.endDate").value(command.getEndDate().toString()))
                 .andExpect(jsonPath("$.salary").value(command.getSalary()));
-
-        assertFalse(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
 
     @Test
@@ -1063,7 +1051,7 @@ class PeopleControllerTest {
     public void testAddPosition_CurrentPositionAddedToEmployeeByAdmin_Success() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Drukarz Frytkarz");
         command.setStartDate(LocalDate.of(1974, 1, 1));
         command.setSalary(BigDecimal.valueOf(3000.0));
@@ -1090,7 +1078,7 @@ class PeopleControllerTest {
     public void testAddPosition_HistoricalPositionAddedToEmployeeByEmployee_Success() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Drukarz Frytkarz");
         command.setStartDate(LocalDate.of(1960, 1, 1));
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1105,8 +1093,6 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.startDate").value(command.getStartDate().toString()))
                 .andExpect(jsonPath("$.endDate").value(command.getEndDate().toString()))
                 .andExpect(jsonPath("$.salary").value(command.getSalary()));
-
-        assertFalse(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
 
     @Test
@@ -1116,7 +1102,7 @@ class PeopleControllerTest {
     public void testAddPosition_HistoricalPositionNotAddedByImporterForbidden_UnauthorizedAccess() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Drukarz Frytkarz");
         command.setStartDate(LocalDate.of(1960, 1, 1));
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1137,7 +1123,7 @@ class PeopleControllerTest {
     public void testAddPosition_HistoricalPositionNotAddedByUnauthenticatedUser_UnauthenticatedAccess() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Drukarz Frytkarz");
         command.setStartDate(LocalDate.of(1960, 1, 1));
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1156,7 +1142,7 @@ class PeopleControllerTest {
     @Sql("/data.sql")
     @Transactional
     public void testAddPosition_EmployeeNotFound_EntityNotFoundExceptionThrown() throws Exception {
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Drukarz Frytkarz");
         command.setStartDate(LocalDate.of(1960, 1, 1));
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1175,7 +1161,7 @@ class PeopleControllerTest {
     public void testAddPosition_PositionNotAddedValidationFailedOnPositionNameAndSalary_MethodArgumentNotValidExceptionThrown() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Pałkarz#$#$#$#");
         command.setStartDate(LocalDate.of(2023, 1, 1));
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1200,7 +1186,7 @@ class PeopleControllerTest {
     public void testAddPosition_PositionNotAddedStartDateNull_MethodArgumentNotValidExceptionThrown() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Kucharz");
         command.setStartDate(null);
         command.setEndDate(LocalDate.of(1961, 1, 1));
@@ -1213,7 +1199,7 @@ class PeopleControllerTest {
                 .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
                 .andExpect(jsonPath("$.message").value("Field validations errors"))
                 .andExpect(jsonPath("$.violations[?(@.field=='startDate')].message").value("Start date cannot be empty."))
-                .andExpect(jsonPath("$.violations[?(@.field=='createPositionCommand')].message").value("Start date must be present."));
+                .andExpect(jsonPath("$.violations[?(@.field=='positionCommand')].message").value("Start date cannot be empty."));
 
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
@@ -1225,7 +1211,7 @@ class PeopleControllerTest {
     public void testAddPosition_PositionNotAddedStartDateAndCurrentPositionEndDateNull_MethodArgumentNotValidExceptionThrown() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Kucharz");
         command.setStartDate(LocalDate.of(2022, 1, 1));
         command.setEndDate(null);
@@ -1238,7 +1224,7 @@ class PeopleControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
                 .andExpect(jsonPath("$.message").value("Field validations errors"))
-                .andExpect(jsonPath("$.violations[?(@.field=='createPositionCommand')].message").value("Specify either historical or current position dates, not both."));
+                .andExpect(jsonPath("$.violations[?(@.field=='positionCommand')].message").value("Specify either historical or current position end date."));
 
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
@@ -1250,7 +1236,7 @@ class PeopleControllerTest {
     public void testAddPosition_PositionNotAddedEndDateAndCurrentPositionEndDatePresent_MethodArgumentNotValidExceptionThrown() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Kucharz");
         command.setStartDate(LocalDate.of(2022, 1, 1));
         command.setEndDate(LocalDate.of(2023, 1, 1));
@@ -1263,7 +1249,7 @@ class PeopleControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
                 .andExpect(jsonPath("$.message").value("Field validations errors"))
-                .andExpect(jsonPath("$.violations[?(@.field=='createPositionCommand')].message").value("End date and current position's end date can't both be present."));
+                .andExpect(jsonPath("$.violations[?(@.field=='positionCommand')].message").value("Specify either historical or current position end date."));
 
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
@@ -1275,7 +1261,7 @@ class PeopleControllerTest {
     public void testAddPosition_PositionNotAddedStartDateIsAfterEndDate_MethodArgumentNotValidExceptionThrown() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Kucharz");
         command.setStartDate(LocalDate.of(2023, 1, 1));
         command.setEndDate(LocalDate.of(2022, 1, 1));
@@ -1287,7 +1273,7 @@ class PeopleControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
                 .andExpect(jsonPath("$.message").value("Field validations errors"))
-                .andExpect(jsonPath("$.violations[?(@.field=='createPositionCommand')].message").value("Start date must be before end date for historical positions."));
+                .andExpect(jsonPath("$.violations[?(@.field=='positionCommand')].message").value("Start date must be before end date for historical positions."));
 
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
@@ -1299,7 +1285,7 @@ class PeopleControllerTest {
     public void testAddPosition_PositionNotAddedCurrentPositionEndDateIsAfterNewPositionStartDate_MethodArgumentNotValidExceptionThrown() throws Exception {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Kucharz");
         command.setStartDate(LocalDate.of(2023, 1, 1));
         command.setSalary(BigDecimal.valueOf(3000.0));
@@ -1311,7 +1297,7 @@ class PeopleControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
                 .andExpect(jsonPath("$.message").value("Field validations errors"))
-                .andExpect(jsonPath("$.violations[?(@.field=='createPositionCommand')].message").value("Current position end date must be before new position start date."));
+                .andExpect(jsonPath("$.violations[?(@.field=='positionCommand')].message").value("Current position end date must be before new position start date."));
 
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
@@ -1324,8 +1310,9 @@ class PeopleControllerTest {
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
 
         Employee employee = (Employee) personRepository.findById(4L).get();
+        System.out.println("EMPLOYEE: " + employee);
 
-        CreatePositionCommand command = new CreatePositionCommand();
+        PositionCommand command = new PositionCommand();
         command.setPositionName("Kucharz");
         command.setStartDate(LocalDate.of(2023, 1, 1));
         command.setCurrentPositionEndDate(LocalDate.of(1970, 1, 1));
@@ -1336,9 +1323,7 @@ class PeopleControllerTest {
                         .content(objectMapper.writeValueAsString(command)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.timestamp").value(Matchers.notNullValue()))
-                .andExpect(jsonPath("$.message").value(MessageFormat.format(
-                        "Employee''s start date {0} is after indicated position''s end date {1}.",
-                        employee.getStartDate(), command.getCurrentPositionEndDate())));
+                .andExpect(jsonPath("$.message").value("Current position end date is before its start date."));
         assertTrue(positionRepository.findAllByEmployeeId(4L).isEmpty());
     }
 

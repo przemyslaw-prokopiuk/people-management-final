@@ -1,17 +1,21 @@
 package pl.kurs.model.command.creation;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigInteger;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("pensioner")
+@ToString(callSuper = true)
+@NoArgsConstructor
+@SuperBuilder
 public class CreatePensionerCommand extends CreatePersonCommand {
 
     @NotNull(message = "Monthly pension cannot be empty.")

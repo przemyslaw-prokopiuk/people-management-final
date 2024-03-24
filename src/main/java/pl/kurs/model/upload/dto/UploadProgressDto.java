@@ -10,7 +10,6 @@ public class UploadProgressDto {
 
     private int linesToBeProcessed;
     private int linesProcessed;
-    private int errorCount;
     private UploadStatus status;
     private LocalDateTime startTime;
     private LocalDateTime finishTime;

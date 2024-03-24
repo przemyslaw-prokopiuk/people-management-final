@@ -1,19 +1,18 @@
 package pl.kurs.model.command.creation;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import pl.kurs.model.validation.annotation.ValidSocialNumber;
 
-@Getter
-@Setter
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = CreateStudentCommand.class, name = "student"),
-        @JsonSubTypes.Type(value = CreateEmployeeCommand.class, name = "employee"),
-        @JsonSubTypes.Type(value = CreatePensionerCommand.class, name = "pensioner")})
+@Data
+@NoArgsConstructor
+@SuperBuilder
 public abstract class CreatePersonCommand {
+
+    @NotNull(message = "Type cannot be empty.")
+    private String type;
 
     @NotBlank(message = "First name cannot be empty.")
     @Pattern(regexp = "[A-Z][a-z]{2,}( [A-Z][a-z]{2,})?", message = "First name must match {regexp}.")
@@ -23,8 +22,9 @@ public abstract class CreatePersonCommand {
     @Pattern(regexp = "[A-Z][a-z]{2,}( [A-Z][a-z]{2,})?", message = "Last name must match {regexp}.")
     private String lastName;
 
-    @NotBlank(message = "Social number cannot be empty.")
+    @NotNull(message = "Social number cannot be empty.")
     @Pattern(regexp = "[0-9]{11}", message = "Social number must contain 11 digits.")
+    @ValidSocialNumber
     private String socialNumber;
 
     @NotNull(message = "Height cannot be empty.")

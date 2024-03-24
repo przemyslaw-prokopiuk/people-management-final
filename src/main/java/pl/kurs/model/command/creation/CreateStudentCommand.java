@@ -1,15 +1,19 @@
 package pl.kurs.model.command.creation;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("student")
+@ToString(callSuper = true)
+@NoArgsConstructor
+@SuperBuilder
 public class CreateStudentCommand extends CreatePersonCommand {
 
     @NotBlank(message = "University name cannot be empty.")

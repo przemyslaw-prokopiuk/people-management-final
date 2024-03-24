@@ -1,4 +1,4 @@
-package pl.kurs.service.impl;
+package pl.kurs.service.upload.impl;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.kurs.model.upload.dto.UploadDto;
-import pl.kurs.service.CsvProcessingService;
-import pl.kurs.service.UploadProgressService;
-import pl.kurs.service.UploadRequestProcessor;
+import pl.kurs.service.upload.CsvProcessor;
+import pl.kurs.service.upload.UploadProgressService;
+import pl.kurs.service.upload.UploadRequestProcessor;
 
 @Service
 @RequiredArgsConstructor
@@ -17,11 +17,11 @@ import pl.kurs.service.UploadRequestProcessor;
 public class UploadRequestProcessorImpl implements UploadRequestProcessor {
 
     private final UploadProgressService uploadProgressService;
-    private final CsvProcessingService csvProcessingService;
+    private final CsvProcessor csvProcessor;
 
     public UploadDto processUploadRequest(MultipartFile file) {
         UploadDto uploadDto = uploadProgressService.initializeUploadTracking();
-        csvProcessingService.processFileAsync(file, uploadDto);
+        csvProcessor.processFileAsync(file, uploadDto);
         return uploadDto;
     }
 }

@@ -20,7 +20,6 @@ public class UploadProgress {
 
     private int linesToBeProcessed;
     private int linesProcessed;
-    private int errorCount;
 
     @Enumerated(EnumType.STRING)
     private UploadStatus status;
@@ -30,7 +29,6 @@ public class UploadProgress {
     public UploadProgress() {
         this.linesToBeProcessed = 0;
         this.linesProcessed = 0;
-        this.errorCount = 0;
         this.status = IN_PROGRESS;
         this.startTime = LocalDateTime.now();
         this.finishTime = null;

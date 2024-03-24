@@ -8,6 +8,4 @@ import pl.kurs.model.upload.dto.UploadProgressDto;
 public interface UploadStatusMapper {
 
     UploadProgressDto fromEntityToDto(UploadProgress uploadProgress);
-
-
 }

@@ -3,15 +3,13 @@ package pl.kurs;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
-import pl.kurs.properties.CsvValidatorProperties;
 import pl.kurs.properties.ExecutorProperties;
+import pl.kurs.properties.UploadProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ExecutorProperties.class, CsvValidatorProperties.class})
+@EnableConfigurationProperties({ExecutorProperties.class, UploadProperties.class})
 @EnableAsync
-@EnableRetry
 public class PeopleManagementSystemApplication {
 
     public static void main(String[] args) {

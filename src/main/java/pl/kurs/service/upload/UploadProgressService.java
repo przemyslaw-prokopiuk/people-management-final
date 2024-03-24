@@ -1,7 +1,6 @@
-package pl.kurs.service;
+package pl.kurs.service.upload;
 
 
-import pl.kurs.model.upload.UploadProgress;
 import pl.kurs.model.upload.dto.UploadDto;
 import pl.kurs.model.upload.dto.UploadProgressDto;
 
@@ -10,8 +9,6 @@ public interface UploadProgressService {
     UploadDto initializeUploadTracking();
 
     UploadProgressDto findById(Long uploadStatusId);
-
-    UploadProgress retrieveUploadStatus(Long uploadStatusId);
 
     void updateLinesToBeProcessed(Long uploadStatusId, int totalLines);
 

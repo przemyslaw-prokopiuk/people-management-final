@@ -8,7 +8,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -16,17 +16,10 @@ spring:
     multipart:
       max-file-size: 3000MB
       max-request-size: 3000MB
-#  sql:
-#    init:
-#      mode: always
 
 executor:
   core-pool-size: 2
   max-pool-size: 4
 
-csv:
-  validator:
-    student-field-count: 10
-    employee-field-count: 10
-    pensioner-field-count: 9
-    max-allowed-errors: 100
+upload:
+  batch-size: 5000

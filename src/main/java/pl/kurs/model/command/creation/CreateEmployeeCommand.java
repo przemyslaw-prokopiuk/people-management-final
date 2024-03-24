@@ -1,16 +1,20 @@
 package pl.kurs.model.command.creation;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("employee")
+@ToString(callSuper = true)
+@NoArgsConstructor
+@SuperBuilder
 public class CreateEmployeeCommand extends CreatePersonCommand {
 
     @NotBlank(message = "Position name cannot be empty.")
